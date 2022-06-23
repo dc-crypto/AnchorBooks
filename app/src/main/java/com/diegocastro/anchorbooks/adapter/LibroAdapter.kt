@@ -1,8 +1,11 @@
 package com.diegocastro.anchorbooks.adapter
 
+import android.content.Intent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.diegocastro.anchorbooks.DetalleActivity
 import com.diegocastro.anchorbooks.databinding.LibroItemBinding
 import com.diegocastro.anchorbooks.modelo.Libro
 import com.squareup.picasso.Picasso
@@ -26,6 +29,12 @@ class LibroAdapter (private val datos:List<Libro>):RecyclerView.Adapter<LibroAda
         holder.binding.tvLenguaje.text="Lenguaje: ${libro.lenguaje}"
         holder.binding.tvPais.text="País: ${libro.pais}"
         Picasso.get().load(libro.imagen).into(holder.binding.imageView)
+
+        //onclick libro
+        holder.binding.root.setOnClickListener(View.OnClickListener{
+            val intent=Intent(it.context,DetalleActivity::class.java)
+            it.context.startActivity(intent)
+        })
 
     }
 
