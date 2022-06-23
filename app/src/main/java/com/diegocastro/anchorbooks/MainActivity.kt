@@ -2,21 +2,18 @@ package com.diegocastro.anchorbooks
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import androidx.activity.viewModels
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diegocastro.anchorbooks.adapter.LibroAdapter
 import com.diegocastro.anchorbooks.databinding.ActivityMainBinding
-import com.diegocastro.anchorbooks.modelo.Libro
-import com.diegocastro.anchorbooks.service.LibroService
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import com.diegocastro.anchorbooks.view.LibroViewModel
 
 class MainActivity : AppCompatActivity() {
-    //.1
     private lateinit var binding: ActivityMainBinding
+
+    //VIEWMODEL
+    private val libroViewModel:LibroViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,32 +24,14 @@ class MainActivity : AppCompatActivity() {
         val recyclerView =binding.recyclerView
         recyclerView.layoutManager=LinearLayoutManager(this)
 
+        //LLAMA A LA FUNCIÓN
+        libroViewModel.cargarLibros()
 
-        //RETROFIT
-
-        val baseUrl = "https://my-json-server.typicode.com/Himuravidal/anchorBooks/"
-
-        val retrofit = Retrofit.Builder()
-            .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val libroService = retrofit.create(LibroService::class.java)
-
-        //LISTA TODOS LOS LIBROS
-        libroService.listLibros().enqueue( object: Callback<List<Libro>> {
-
-            override fun onResponse(call: Call<List<Libro>>, response: Response<List<Libro>>) {
-                val libros = response.body()?: listOf()
-                recyclerView.adapter=LibroAdapter(libros)
-                Log.d("RECYCLER","Cargando datos EN ADAPTER")
-            }
-
-            override fun onFailure(call: Call<List<Libro>>, t: Throwable) {
-                t.printStackTrace()
-                Log.e("RETROFIT", "Retrofit falló al traer los datos")
-            }
-
+        //OBSERVER
+        libroViewModel.libros.observe(this, Observer { libros ->
+            binding.recyclerView.adapter=LibroAdapter(libros)
         })
+
+
     }
 }
