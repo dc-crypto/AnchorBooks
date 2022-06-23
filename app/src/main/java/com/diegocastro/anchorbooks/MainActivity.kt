@@ -3,6 +3,8 @@ package com.diegocastro.anchorbooks
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.diegocastro.anchorbooks.adapter.LibroAdapter
 import com.diegocastro.anchorbooks.databinding.ActivityMainBinding
 import com.diegocastro.anchorbooks.modelo.Libro
 import com.diegocastro.anchorbooks.service.LibroService
@@ -18,14 +20,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //.2
         binding=ActivityMainBinding.inflate(layoutInflater)
-
-        //.3 cambiamos el argumento por binding.root
         setContentView(binding.root)
 
-        //binding.textview1.text="Hola Mundillo uno!!!"
-        //binding.textview2.text="Hola Mundillo dos!!!"
+        //RECYCLER VIEW
+        val recyclerView =binding.recyclerView
+        recyclerView.layoutManager=LinearLayoutManager(this)
+
+
+        //RETROFIT
 
         val baseUrl = "https://my-json-server.typicode.com/Himuravidal/anchorBooks/"
 
@@ -36,15 +39,16 @@ class MainActivity : AppCompatActivity() {
 
         val libroService = retrofit.create(LibroService::class.java)
 
-        libroService.detailLibro(4).enqueue( object: Callback<Libro> {
+        //LISTA TODOS LOS LIBROS
+        libroService.listLibros().enqueue( object: Callback<List<Libro>> {
 
-            override fun onResponse(call: Call<Libro>, response: Response<Libro>) {
-                val libro = response.body()
-                binding.textview2.text=libro.toString()
-                Log.d("RETROFIT","Cargando datos del libro")
+            override fun onResponse(call: Call<List<Libro>>, response: Response<List<Libro>>) {
+                val libros = response.body()?: listOf()
+                recyclerView.adapter=LibroAdapter(libros)
+                Log.d("RECYCLER","Cargando datos EN ADAPTER")
             }
 
-            override fun onFailure(call: Call<Libro>, t: Throwable) {
+            override fun onFailure(call: Call<List<Libro>>, t: Throwable) {
                 t.printStackTrace()
                 Log.e("RETROFIT", "Retrofit falló al traer los datos")
             }
