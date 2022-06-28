@@ -10,15 +10,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LibroViewModel @Inject constructor(val repo: LibroRepository): ViewModel() {
+class LibroDetalleViewModel @Inject constructor(val repo: LibroRepository): ViewModel() {
 
-    val libros = MutableLiveData<List<Libro>>()
+    val libro = MutableLiveData<Libro>()
 
-    fun cargarLibros() {
+    fun cargarLibro(id:Int) {
         viewModelScope.launch {
-            val librosFromRepo = repo.findAll()
-            if( !librosFromRepo.isNullOrEmpty() ) {
-                libros.postValue(librosFromRepo)
+            val libroFromRepo = repo.findById(id)
+            if( libroFromRepo != null ) {
+                libro.postValue(libroFromRepo)
             }
         }
     }

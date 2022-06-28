@@ -1,89 +1,72 @@
 package com.diegocastro.anchorbooks
 
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.viewModels
+import androidx.lifecycle.Observer
 import androidx.room.Room
+import com.diegocastro.anchorbooks.adapter.LIBROID_MESSAGE
 import com.diegocastro.anchorbooks.databinding.ActivityDetalleBinding
 import com.diegocastro.anchorbooks.db.BaseDatos
 import com.diegocastro.anchorbooks.db.LibroEntity
+import com.diegocastro.anchorbooks.view.LibroDetalleViewModel
+import com.squareup.picasso.Picasso
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class DetalleActivity : AppCompatActivity() {
 
-    //VIEWBINDING
     private lateinit var binding:ActivityDetalleBinding
+
+    private val libroDetalleViewModel:LibroDetalleViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding=ActivityDetalleBinding.inflate(layoutInflater)
+        binding = ActivityDetalleBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //CORRUTINA
-        GlobalScope.launch {
-            val db= Room.databaseBuilder(
-                applicationContext,
-                BaseDatos::class.java,
-                "libros-db"
-            ).build()
+        val libroid = intent.getIntExtra(LIBROID_MESSAGE, 0)
 
-            val libroDao=db.libroDao()
+        // le delegamos la responsabilidad al ViewModel
+        // para cargar los datos del libro
+        libroDetalleViewModel.cargarLibro(libroid)
 
-            //METODO BORRARTODO EVITA PROBLEMAS DE PRIMARY KEY
-            libroDao.deleteAll()
+        libroDetalleViewModel.libro.observe(this, Observer { libro ->
+            with(binding) {
+                tvDetalleTitulo.text = libro.titulo
+                tvDetalleAutor.text = libro.autor
+                tvDetallePrecio.text = "${libro.precio}"
+                Picasso.get().load(libro.imagen).into(imgDetalle)
+            }
 
-            //PROBAMOS METODO DE INSERCION
-            libroDao.insertAll(
-                LibroEntity(
-                    1,
-                    "Juan perez",
-                    "Chile",
-                    "http://example.com/img.jpg",
-                    "español",
-                    "http://juanito.cl",
-                    110,
-                    "Lorem Ipsum",
-                    2019,
-                    25000,
-                    30000,
-                    true
-                    ),
-                LibroEntity(
-                    2,
-                    "Cata Gonzalez",
-                    "Argentina",
-                    "http://example.com/img.jpg",
-                    "español",
-                    "http://juanito.cl",
-                    120,
-                    "Lorem Ipsum",
-                    2019,
-                    30000,
-                    40000,
-                    true
-                ),
-                LibroEntity(
-                    3,
-                    "Carlos Payulis",
-                    "Argentina",
-                    "http://example.com/img.jpg",
-                    "español",
-                    "http://juanito.cl",
-                    120,
-                    "Lorem Ipsum",
-                    2020,
-                    40000,
-                    50000,
-                    true
-                )
+            // evento boton comprar
+            binding.btnComprar.setOnClickListener {
+                val textoCorreo = """
+                Hola, 
+                    
+                Vi el libro ${libro.titulo} de código ${libro.id} y me gustaría que me 
+                contactaran a este correo o al siguiente número telefónico ___________.
+                
+                Quedo atent@
+                """.trimIndent()
 
-            )
+                val intentMail = Intent(Intent.ACTION_SENDTO).apply {
+                    type = "msage/rfc822" // fix para que funcione PARA (TO)
+                    data = Uri.parse("mailto:")
+                    val para:Array<String> = arrayOf("ventas@anchorbook.cl")
 
-            //PROBAMOS METODO TRAER_TODO DE BD
-            val libros = libroDao.getAll()
+                    putExtra(Intent.EXTRA_EMAIL, para)
+                    putExtra(Intent.EXTRA_SUBJECT, "Consulta por libro ${libro.titulo} de código ${libro.id}")
+                    putExtra(Intent.EXTRA_TEXT, textoCorreo)
+                }
 
-            //BINDING EN EL TEXTVIEW DE PRUEBA
-            binding.textView.text=libros.toString()
-        }
+                startActivity(intentMail)
+            }
+            // END evento boton comprar
+        })
     }
 }

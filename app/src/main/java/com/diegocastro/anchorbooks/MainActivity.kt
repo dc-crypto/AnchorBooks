@@ -8,30 +8,28 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.diegocastro.anchorbooks.adapter.LibroAdapter
 import com.diegocastro.anchorbooks.databinding.ActivityMainBinding
 import com.diegocastro.anchorbooks.view.LibroViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityMainBinding
 
-    //VIEWMODEL
     private val libroViewModel:LibroViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding=ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        binding = ActivityMainBinding.inflate( layoutInflater )
+        setContentView( binding.root )
 
-        //RECYCLER VIEW
-        val recyclerView =binding.recyclerView
-        recyclerView.layoutManager=LinearLayoutManager(this)
+        // RECYCLERVIEW
+        val recyclerView = binding.recyclerView
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        //LLAMA A LA FUNCIÓN
         libroViewModel.cargarLibros()
 
-        //OBSERVER
         libroViewModel.libros.observe(this, Observer { libros ->
-            binding.recyclerView.adapter=LibroAdapter(libros)
+            binding.recyclerView.adapter = LibroAdapter(libros)
         })
-
-
     }
 }

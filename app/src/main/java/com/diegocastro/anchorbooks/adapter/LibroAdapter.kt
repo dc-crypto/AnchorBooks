@@ -7,38 +7,41 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.diegocastro.anchorbooks.DetalleActivity
 import com.diegocastro.anchorbooks.databinding.LibroItemBinding
+import com.diegocastro.anchorbooks.modelo.LibroModel
 import com.diegocastro.anchorbooks.modelo.Libro
 import com.squareup.picasso.Picasso
 
-class LibroAdapter (private val datos:List<Libro>):RecyclerView.Adapter<LibroAdapter.ViewHolder>() {
+const val LIBROID_MESSAGE = "com.diegocastro.anchorbooks.LIBROID"
 
-    //creamos la clase interna
-    class ViewHolder(val binding:LibroItemBinding):RecyclerView.ViewHolder(binding.root){
+class LibroAdapter(private val datos:List<Libro>):RecyclerView.Adapter<LibroAdapter.ViewHolder>() {
 
-    }
+    class ViewHolder(val binding:LibroItemBinding):RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = LibroItemBinding.inflate(LayoutInflater.from(parent.context),parent, false)
+        val binding = LibroItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val libro=datos.get(position)
-        holder.binding.tvTitulo.text=libro.titulo
-        holder.binding.tvAutor.text="Autor: ${libro.autor}"
-        holder.binding.tvLenguaje.text="Lenguaje: ${libro.lenguaje}"
-        holder.binding.tvPais.text="País: ${libro.pais}"
-        Picasso.get().load(libro.imagen).into(holder.binding.imageView)
+        val libro = datos.get(position)
+        with(holder.binding) {
+            tvTitulo.text   = libro.titulo
+            tvAutor.text    = "Autor: ${libro.autor}"
+            tvLenguaje.text = "Lenguaje: ${libro.lenguaje}"
+            tvPais.text     = "País: ${libro.pais}"
+            Picasso.get().load(libro.imagen).into(imageView)
+        }
 
-        //onclick libro
-        holder.binding.root.setOnClickListener(View.OnClickListener{
-            val intent=Intent(it.context,DetalleActivity::class.java)
+        // onclick libro item
+        holder.binding.root.setOnClickListener(View.OnClickListener {
+            val intent = Intent(it.context, DetalleActivity::class.java).apply {
+                putExtra(LIBROID_MESSAGE, libro.id)
+            }
             it.context.startActivity(intent)
         })
-
     }
 
     override fun getItemCount(): Int {
-                return datos.size
+        return datos.size
     }
 }
